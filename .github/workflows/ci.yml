@@ -1,0 +1,26 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      # The toolchain the code is built with here and in Stelly: a newer
+      # clippy's new lints are a deliberate bump, not a red build overnight.
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.96.0"
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      # Each feature on its own and together: the types alone must build
+      # without either client.
+      - run: cargo test --locked
+      - run: cargo test --locked --features async
+      - run: cargo test --locked --features blocking
+      - run: cargo clippy --locked --all-features --all-targets -- -D warnings
