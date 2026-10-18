@@ -14,7 +14,7 @@ any provider, on reqwest with the `async` feature or on ureq with
 what a provider itself depends on.
 
 ```toml
-stelly-provider = { git = "https://github.com/nab-os/stelly-provider", tag = "v0.1.0", features = ["async"] }
+stelly-provider = { git = "https://github.com/nab-os/stelly-provider", tag = "v0.2.0", features = ["async"] }
 ```
 
 ```rust

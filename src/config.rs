@@ -26,9 +26,7 @@ impl Default for Config {
 impl Config {
     /// `STELLY_PROVIDER_URL` and `STELLY_PROVIDER_TOKEN`, from the
     /// environment over `env_file` if one is given, the default URL and no
-    /// token otherwise. `STELLY_QOBUZ_URL` and `STELLY_QOBUZ_TOKEN`, what
-    /// they were called when the only provider was Qobuz's gateway, still
-    /// count where the new names are not set.
+    /// token otherwise.
     pub fn from_env(env_file: Option<&Path>) -> Self {
         let file = env_file.map(parse_env).unwrap_or_default();
         let get = |key: &str| {
@@ -39,11 +37,10 @@ impl Config {
         };
         Self {
             url: get("STELLY_PROVIDER_URL")
-                .or_else(|| get("STELLY_QOBUZ_URL"))
                 .unwrap_or_else(|| DEFAULT_URL.to_string())
                 .trim_end_matches('/')
                 .to_string(),
-            token: get("STELLY_PROVIDER_TOKEN").or_else(|| get("STELLY_QOBUZ_TOKEN")),
+            token: get("STELLY_PROVIDER_TOKEN"),
         }
     }
 }
