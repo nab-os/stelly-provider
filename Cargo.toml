@@ -1,6 +1,6 @@
 [package]
 name = "stelly-provider"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 description = "What Stelly asks a music provider for, and how: the catalogue's types, the provider protocol, and a client of it, async or blocking"
 license = "MIT OR Apache-2.0"
