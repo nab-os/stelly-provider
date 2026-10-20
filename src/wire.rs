@@ -5,6 +5,12 @@ use serde::{Deserialize, Serialize};
 /// The header a request names its lane in; absent, it is interactive.
 pub const PRIORITY_HEADER: &str = "x-priority";
 
+/// The header a search names its search box in: unique to whoever types in
+/// it, and the same across one burst of typing. A provider that queues
+/// searches gives up on one still waiting once a newer one from the same
+/// session comes, answering it 409; any other ignores it.
+pub const SEARCH_SESSION_HEADER: &str = "x-search-session";
+
 /// Which lane a request waits in when a provider has to ration its
 /// requests. Interactive requests, someone at a screen, go ahead of bulk
 /// ones, a crawl, an analysis, an index.

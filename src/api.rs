@@ -19,6 +19,8 @@ pub struct Call<T> {
     /// From the provider's root, `/v1/...`; ids are percent-encoded.
     pub path: String,
     pub query: Vec<(&'static str, String)>,
+    /// Sent as they are, besides the token and the lane.
+    pub headers: Vec<(&'static str, String)>,
     pub body: Option<Value>,
     answer: PhantomData<fn() -> T>,
 }
@@ -29,6 +31,7 @@ impl<T> Call<T> {
             method: Method::Get,
             path,
             query: Vec::new(),
+            headers: Vec::new(),
             body: None,
             answer: PhantomData,
         }
@@ -39,6 +42,7 @@ impl<T> Call<T> {
             method: Method::Post,
             path,
             query: Vec::new(),
+            headers: Vec::new(),
             body: Some(body),
             answer: PhantomData,
         }
@@ -46,6 +50,14 @@ impl<T> Call<T> {
 
     fn query(mut self, key: &'static str, value: impl ToString) -> Self {
         self.query.push((key, value.to_string()));
+        self
+    }
+
+    /// The same call with a header of the caller's, such as
+    /// `wire::SEARCH_SESSION_HEADER`. A provider ignores one it does not
+    /// know.
+    pub fn header(mut self, name: &'static str, value: impl ToString) -> Self {
+        self.headers.push((name, value.to_string()));
         self
     }
 }
