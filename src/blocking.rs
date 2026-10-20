@@ -64,6 +64,9 @@ impl Client {
                 if let Some(auth) = &auth {
                     request = request.header("Authorization", auth);
                 }
+                for (name, value) in &call.headers {
+                    request = request.header(*name, value);
+                }
                 request.call().with_context(unreachable)?
             }
             Method::Post => {
@@ -76,6 +79,9 @@ impl Client {
                 }
                 if let Some(auth) = &auth {
                     request = request.header("Authorization", auth);
+                }
+                for (name, value) in &call.headers {
+                    request = request.header(*name, value);
                 }
                 let body = call.body.clone().unwrap_or(serde_json::Value::Null);
                 request.send_json(&body).with_context(unreachable)?
@@ -97,5 +103,44 @@ impl Client {
         }
         serde_json::from_str(&body)
             .with_context(|| format!("parsing the provider's answer to {}", call.path))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::api;
+    use crate::wire::SEARCH_SESSION_HEADER;
+    use std::io::{Read, Write};
+
+    /// A call's own headers reach the provider beside the lane.
+    #[test]
+    fn a_calls_headers_are_sent() {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}", listener.local_addr().unwrap());
+        let provider = std::thread::spawn(move || {
+            let (mut stream, _) = listener.accept().unwrap();
+            let mut request = Vec::new();
+            let mut buf = [0; 1024];
+            while !request.ends_with(b"\r\n\r\n") {
+                let n = stream.read(&mut buf).unwrap();
+                request.extend_from_slice(&buf[..n]);
+            }
+            let body = r#"{"tracks":[],"albums":[],"artists":[]}"#;
+            write!(
+                stream,
+                "HTTP/1.1 200 OK\r\ncontent-length: {}\r\n\r\n{body}",
+                body.len()
+            )
+            .unwrap();
+            String::from_utf8(request).unwrap().to_lowercase()
+        });
+        let client = Client::new(Config { url, token: None });
+        client
+            .send(api::search("a", 1).header(SEARCH_SESSION_HEADER, "box"))
+            .unwrap();
+        let request = provider.join().unwrap();
+        assert!(request.contains("x-search-session: box\r\n"), "{request}");
+        assert!(request.contains("x-priority: interactive\r\n"), "{request}");
     }
 }

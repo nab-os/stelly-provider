@@ -52,6 +52,9 @@ impl Client {
         if let Some(token) = &self.config.token {
             request = request.bearer_auth(token);
         }
+        for (name, value) in &call.headers {
+            request = request.header(*name, value);
+        }
         if let Some(body) = &call.body {
             request = request.json(body);
         }

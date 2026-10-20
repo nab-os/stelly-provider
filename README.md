@@ -27,7 +27,9 @@ let file = provider.at(Priority::Bulk).send(api::file_url(found.tracks[0].id, Qu
 
 Everything is JSON over HTTP under `/v1`, with an optional bearer token and
 an `x-priority: interactive | bulk` header for providers that ration their
-requests. A provider that cannot do something answers `{"error": "..."}`
+requests. A search may name its search box in `x-search-session`, so a
+provider that queues searches can drop one a newer search from the same box
+has replaced, answering it 409; a provider that does not queue ignores it. A provider that cannot do something answers `{"error": "..."}`
 with a 4xx or 5xx status.
 
 | Call | Answers |
